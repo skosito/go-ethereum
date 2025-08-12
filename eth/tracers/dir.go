@@ -85,6 +85,7 @@ func (d *directory) New(name string, ctx *Context, cfg json.RawMessage, chainCon
 	if len(cfg) == 0 {
 		cfg = json.RawMessage("{}")
 	}
+	fmt.Println("d.elems", d.elems)
 	if elem, ok := d.elems[name]; ok {
 		fmt.Println("found")
 		return elem.ctor(ctx, cfg, chainConfig)
