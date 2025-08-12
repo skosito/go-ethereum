@@ -18,6 +18,7 @@ package tracers
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -80,13 +81,16 @@ func (d *directory) RegisterJSEval(f jsCtorFn) {
 // registered lookups. Name is either name of an existing tracer
 // or an arbitrary JS code.
 func (d *directory) New(name string, ctx *Context, cfg json.RawMessage, chainConfig *params.ChainConfig) (*Tracer, error) {
+	fmt.Println("finding", name)
 	if len(cfg) == 0 {
 		cfg = json.RawMessage("{}")
 	}
 	if elem, ok := d.elems[name]; ok {
+		fmt.Println("found")
 		return elem.ctor(ctx, cfg, chainConfig)
 	}
 	// Assume JS code
+	fmt.Println("js???")
 	return d.jsEval(name, ctx, cfg, chainConfig)
 }
 

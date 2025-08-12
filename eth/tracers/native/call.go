@@ -19,6 +19,7 @@ package native
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/big"
 	"sync/atomic"
 
@@ -127,10 +128,13 @@ type callTracerConfig struct {
 // newCallTracer returns a native go tracer which tracks
 // call frames of a tx, and implements vm.EVMLogger.
 func newCallTracer(ctx *tracers.Context, cfg json.RawMessage, chainConfig *params.ChainConfig) (*tracers.Tracer, error) {
+	fmt.Println("new call tracer")
 	t, err := newCallTracerObject(ctx, cfg)
 	if err != nil {
+		fmt.Println("ERR", err.Error())
 		return nil, err
 	}
+	fmt.Println("returning tracer")
 	return &tracers.Tracer{
 		Hooks: &tracing.Hooks{
 			OnTxStart: t.OnTxStart,
@@ -145,12 +149,16 @@ func newCallTracer(ctx *tracers.Context, cfg json.RawMessage, chainConfig *param
 }
 
 func newCallTracerObject(ctx *tracers.Context, cfg json.RawMessage) (*callTracer, error) {
+	fmt.Println("new call tracer 1")
 	var config callTracerConfig
 	if err := json.Unmarshal(cfg, &config); err != nil {
+		fmt.Println("new call tracer 2", err.Error())
+
 		return nil, err
 	}
 	// First callframe contains tx context info
 	// and is populated on start and end.
+	fmt.Println("new call tracer 3")
 	return &callTracer{callstack: make([]callFrame, 0, 1), config: config}, nil
 }
 
