@@ -18,6 +18,7 @@ package vm
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 	"sync/atomic"
 
@@ -207,6 +208,7 @@ func isSystemCall(caller common.Address) bool {
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
 func (evm *EVM) Call(caller common.Address, addr common.Address, input []byte, gas uint64, value *uint256.Int) (ret []byte, leftOverGas uint64, err error) {
+	fmt.Println("call1")
 	// Capture the tracer start/end events in debug mode
 	if evm.Config.Tracer != nil {
 		evm.captureBegin(evm.depth, CALL, caller, addr, input, gas, value.ToBig())
@@ -214,9 +216,12 @@ func (evm *EVM) Call(caller common.Address, addr common.Address, input []byte, g
 			evm.captureEnd(evm.depth, startGas, leftOverGas, ret, err)
 		}(gas)
 	}
+	fmt.Println("call2")
+
 	if err = evm.hooks.CallHook(evm, caller, addr); err != nil {
 		return nil, gas, err
 	}
+	fmt.Println("call3")
 
 	// Fail if we're trying to execute above the call depth limit
 	if evm.depth > int(params.CallCreateDepth) {
@@ -249,9 +254,17 @@ func (evm *EVM) Call(caller common.Address, addr common.Address, input []byte, g
 	}
 	evm.Context.Transfer(evm.StateDB, caller, addr, value)
 
+	fmt.Println("call4")
+
 	if isPrecompile {
+		fmt.Println("call5")
+
 		ret, gas, err = evm.RunPrecompiledContract(p, caller, input, gas, value, false, evm.Config.Tracer)
+		fmt.Println("call6")
+
 	} else {
+		fmt.Println("call7")
+
 		// Initialise a new contract and set the code that is to be used by the EVM.
 		code := evm.resolveCode(addr)
 		if len(code) == 0 {
@@ -264,6 +277,8 @@ func (evm *EVM) Call(caller common.Address, addr common.Address, input []byte, g
 			ret, err = evm.interpreter.Run(contract, input, false)
 			gas = contract.Gas
 		}
+		fmt.Println("call8")
+
 	}
 	// When an error was returned by the EVM or when setting the creation code
 	// above we revert to the snapshot and consume any gas remaining. Additionally,
@@ -281,6 +296,8 @@ func (evm *EVM) Call(caller common.Address, addr common.Address, input []byte, g
 		//} else {
 		//	evm.StateDB.DiscardSnapshot(snapshot)
 	}
+	fmt.Println("call9")
+
 	return ret, gas, err
 }
 
